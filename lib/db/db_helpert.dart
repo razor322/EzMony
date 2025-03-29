@@ -51,14 +51,14 @@ class DbHelper {
     }
   }
 
-  Future<List<TransaksiModel>> getAll() async {
+  Future<List<TransactionModel>> getAll() async {
     try {
       if (_database == null) {
         await database();
       }
       final data = await _database!.query(namaTabel);
-      List<TransaksiModel> result =
-          data.map((e) => TransaksiModel.fromJson(e)).toList();
+      List<TransactionModel> result =
+          data.map((e) => TransactionModel.fromJson(e)).toList();
       return result;
     } catch (e) {
       print("Error fetching data: $e");
