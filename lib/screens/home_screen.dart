@@ -1,32 +1,30 @@
 // ignore_for_file: prefer_const_constructors
 
 import 'package:flutter/material.dart';
+import 'package:flutter_sqflite/controllers/transaction_controller.dart';
 import 'package:flutter_sqflite/db/db_helpert.dart';
 import 'package:flutter_sqflite/models/transaction_model.dart';
+import 'package:flutter_sqflite/routes/app_routes.dart';
 import 'package:flutter_sqflite/screens/update_screen.dart';
-import 'package:flutter_sqflite/utils/string_exrension.dart';
+import 'package:flutter_sqflite/styles/app_sizes.dart';
+import 'package:flutter_sqflite/utils/extensions/double.extension.dart';
+import 'package:flutter_sqflite/utils/extensions/string_exrension.dart';
+import 'package:get/get.dart';
 
-class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key});
-
-  @override
-  State<HomeScreen> createState() => _HomeScreenState();
-}
-
-class _HomeScreenState extends State<HomeScreen> {
-  @override
+class HomeScreen extends StatelessWidget {
+  final controller = Get.put(TransactionController());
   DbHelper? dbHelper;
 
-  void initState() {
-    dbHelper = DbHelper();
-    initDatabase();
-    super.initState();
-  }
+  // void initState() {
+  //   dbHelper = DbHelper();
+  //   initDatabase();
+  //   super.initState();
+  // }
 
-  Future initDatabase() async {
-    await dbHelper!.database();
-    setState(() {});
-  }
+  // Future initDatabase() async {
+  //   await dbHelper!.database();
+  //   setState(() {});
+  // }
 
   showAlertDialog(BuildContext context, int idTransaction) {
     AlertDialog alert = AlertDialog(
@@ -45,7 +43,7 @@ class _HomeScreenState extends State<HomeScreen> {
             onPressed: () {
               dbHelper!.hapus(idTransaction);
               Navigator.pop(context);
-              setState(() {});
+              // setState(() {});
             },
             child: Text(
               "Yakin",
@@ -73,146 +71,173 @@ class _HomeScreenState extends State<HomeScreen> {
             IconButton(
               icon: Icon(Icons.add),
               onPressed: () {
-                Navigator.pushNamed(context, '/create').then((value) {
-                  setState(() {});
-                });
+                Get.toNamed(AppRoutes.create);
+                // Navigator.pushNamed(context, '/create').then((value) {});
               },
               color: Colors.white,
             )
           ],
         ),
-        body: SafeArea(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const SizedBox(
-                height: 10,
-              ),
-              Center(
-                child: FutureBuilder(
-                    future: dbHelper!.totalPemasukan(),
-                    builder: (context, snp) {
-                      if (snp.connectionState == ConnectionState.waiting) {
-                        return CircularProgressIndicator();
-                      } else {
-                        if (snp.hasData) {
-                          return Text(
-                              "Total Pemasukan :${snp.data!.toRupiah()}");
-                        }
-                        return Text("Total Pemasukan : Rp. 0 ");
-                      }
-                    }),
-              ),
-              SizedBox(
-                height: 10,
-              ),
-              Center(
-                child: FutureBuilder(
-                    future: dbHelper!.totalPengeluaran(),
-                    builder: (context, snp) {
-                      if (snp.connectionState == ConnectionState.waiting) {
-                        return CircularProgressIndicator();
-                      } else {
-                        if (snp.hasData) {
-                          return Text(
-                              "Total Pengeluaran : ${snp.data!.toRupiah()}");
-                        }
-                        return Text("Total Pengeluaran : Rp. 0");
-                      }
-                    }),
-              ),
-              SizedBox(
-                height: 10,
-              ),
-              Center(
-                child: FutureBuilder(
-                    future: dbHelper!.totalSaldo(),
-                    builder: (context, snp) {
-                      if (snp.connectionState == ConnectionState.waiting) {
-                        return CircularProgressIndicator();
-                      } else {
-                        if (snp.hasData) {
-                          return Text("Total Saldo : ${snp.data!.toRupiah()}");
-                        }
-                        return Text("Total Saldo : Rp. 0");
-                      }
-                    }),
-              ),
-              SizedBox(
-                height: 30,
-              ),
-              FutureBuilder<List<TransaksiModel>>(
-                  future: dbHelper!.getAll(),
-                  builder: (context, snp) {
-                    if (snp.connectionState == ConnectionState.waiting) {
-                      return Center(
-                        child: CircularProgressIndicator(),
-                      );
-                    } else {
-                      if (snp.hasData) {
-                        return Expanded(
-                          child: ListView.builder(
-                              itemCount: snp.data!.length,
-                              itemBuilder: (context, index) {
-                                final data = snp.data![index];
-                                return ListTile(
-                                  leading: data.type == 1
-                                      ? Icon(
-                                          Icons.download,
-                                          color: Colors.green,
-                                          size: 30,
-                                        )
-                                      : Icon(
-                                          Icons.upload,
-                                          color: Colors.red,
-                                          size: 30,
-                                        ),
-                                  title: Text(data.nama!),
-                                  subtitle: Text(
-                                    data.total!.toRupiah(),
-                                  ),
-                                  trailing: Wrap(
-                                    children: [
-                                      IconButton(
-                                        icon: Icon(Icons.edit),
-                                        onPressed: () {
-                                          Navigator.of(context).push(
-                                              MaterialPageRoute(
-                                                  builder: (context) {
-                                            return UpdateScreen(
-                                                transaksiModel: data);
-                                          })).then((value) {
-                                            setState(() {});
-                                          });
-                                        },
-                                      ),
-                                      IconButton(
-                                        icon: Icon(Icons.delete),
-                                        color: Colors.red,
-                                        onPressed: () {
-                                          showAlertDialog(context, data.id!);
-                                        },
-                                      ),
-                                    ],
-                                  ),
-                                );
-                              }),
-                        );
-                      } else {
-                        return Center(
-                          child: Text(
-                            "Tidak ada data",
-                            style: TextStyle(
-                                color: Colors.black,
-                                fontSize: 16,
-                                fontWeight: FontWeight.w500),
+        body: _buildBody());
+  }
+
+  Widget _buildBody() => _buildContent();
+
+  Widget _buildContent() {
+    return SafeArea(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          AppSizes.s30.toVerticalSpace(),
+          Obx(() {
+            return Column(
+              children: [
+                Center(
+                  child: Text(
+                    "Total Pemasukan : ${controller.income.value.toRupiah()}",
+                  ),
+                ),
+                AppSizes.s10.toVerticalSpace(),
+                Center(
+                  child: Text(
+                    "Total Pengeluaran : ${controller.outcome.value.toRupiah()}",
+                  ),
+                ),
+                AppSizes.s10.toVerticalSpace(),
+                Center(
+                  child: Text(
+                    "Total Saldo : ${controller.balance.value.toRupiah()}",
+                  ),
+                ),
+              ],
+            );
+          }),
+
+          AppSizes.s30.toVerticalSpace(),
+
+          Expanded(child: Obx(() {
+            if (controller.transactions.isEmpty) {
+              return Center(
+                child: Text("Belum ada transaksi"),
+              );
+            } else {
+              return ListView.separated(
+                  separatorBuilder: (context, index) =>
+                      AppSizes.s10.toVerticalSpace(),
+                  itemCount: controller.transactions.length,
+                  itemBuilder: (context, index) {
+                    final data = controller.transactions[index];
+                    return ListTile(
+                      leading: Icon(
+                        data.type == 1 ? Icons.download : Icons.upload,
+                        color: data.type == 1 ? Colors.green : Colors.red,
+                        size: 30,
+                      ),
+                      title: Text(data.nama!),
+                      subtitle: Text(
+                        data.total!.toRupiah(),
+                      ),
+                      trailing: Wrap(
+                        children: [
+                          IconButton(
+                            icon: Icon(Icons.edit),
+                            onPressed: () {
+                              // Navigator.of(context).push(
+                              //     MaterialPageRoute(
+                              //         builder: (context) {
+                              //   return UpdateScreen(
+                              //       transaksiModel: data);
+                              // })).then((value) {
+                              //   setState(() {});
+                              // });
+                            },
                           ),
-                        );
-                      }
-                    }
-                  }),
-            ],
-          ),
-        ));
+                          IconButton(
+                            icon: Icon(Icons.delete),
+                            color: Colors.red,
+                            onPressed: () {
+                              showAlertDialog(context, data.id!);
+                            },
+                          ),
+                        ],
+                      ),
+                    );
+                  });
+            }
+          }))
+
+          // FutureBuilder<List<TransactionModel>>(
+          //     future: dbHelper!.getAll(),
+          //     builder: (context, snp) {
+          //       if (snp.connectionState == ConnectionState.waiting) {
+          //         return Center(
+          //           child: CircularProgressIndicator(),
+          //         );
+          //       } else {
+          //         if (snp.hasData) {
+          //           return Expanded(
+          //             child: ListView.builder(
+          //                 itemCount: snp.data!.length,
+          //                 itemBuilder: (context, index) {
+          //                   final data = snp.data![index];
+          //                   return ListTile(
+          //                     leading: data.type == 1
+          //                         ? Icon(
+          //                             Icons.download,
+          //                             color: Colors.green,
+          //                             size: 30,
+          //                           )
+          //                         : Icon(
+          //                             Icons.upload,
+          //                             color: Colors.red,
+          //                             size: 30,
+          //                           ),
+          //                     title: Text(data.nama!),
+          //                     subtitle: Text(
+          //                       data.total!.toRupiah(),
+          //                     ),
+          //                     trailing: Wrap(
+          //                       children: [
+          //                         IconButton(
+          //                           icon: Icon(Icons.edit),
+          //                           onPressed: () {
+          //                             // Navigator.of(context).push(
+          //                             //     MaterialPageRoute(
+          //                             //         builder: (context) {
+          //                             //   return UpdateScreen(
+          //                             //       transaksiModel: data);
+          //                             // })).then((value) {
+          //                             //   setState(() {});
+          //                             // });
+          //                           },
+          //                         ),
+          //                         IconButton(
+          //                           icon: Icon(Icons.delete),
+          //                           color: Colors.red,
+          //                           onPressed: () {
+          //                             showAlertDialog(context, data.id!);
+          //                           },
+          //                         ),
+          //                       ],
+          //                     ),
+          //                   );
+          //                 }),
+          //           );
+          //         } else {
+          //           return Center(
+          //             child: Text(
+          //               "Tidak ada data",
+          //               style: TextStyle(
+          //                   color: Colors.black,
+          //                   fontSize: 16,
+          //                   fontWeight: FontWeight.w500),
+          //             ),
+          //           );
+          //         }
+          //       }
+          //     }),
+        ],
+      ),
+    );
   }
 }

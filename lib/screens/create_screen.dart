@@ -1,31 +1,27 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_sqflite/controllers/transaction_controller.dart';
 import 'package:flutter_sqflite/db/db_helpert.dart';
-import 'package:flutter_sqflite/utils/string_exrension.dart';
+import 'package:flutter_sqflite/utils/extensions/string_exrension.dart';
+import 'package:get/get_core/src/get_main.dart';
 
-class CreateScreen extends StatefulWidget {
-  const CreateScreen({super.key});
-
-  @override
-  State<CreateScreen> createState() => _CreateScreenState();
-}
-
-class _CreateScreenState extends State<CreateScreen> {
+class CreateScreen extends StatelessWidget {
+  final controller = Get.put(TransactionController());
   DbHelper dbHelper = DbHelper();
   TextEditingController namaController = TextEditingController();
   TextEditingController totalController = TextEditingController(text: "0");
   int _value = 1;
 
-  @override
-  void initState() {
-    dbHelper.database();
-    super.initState();
-  }
+  // @override
+  // void initState() {
+  //   dbHelper.database();
+  //   super.initState();
+  // }
 
-  @override
-  void dispose() {
-    totalController.removeListener(_formatCurrency);
-    super.dispose();
-  }
+  // @override
+  // void dispose() {
+  //   totalController.removeListener(_formatCurrency);
+  //   super.dispose();
+  // }
 
   void _formatCurrency() {
     final text = totalController.text;
@@ -99,9 +95,9 @@ class _CreateScreenState extends State<CreateScreen> {
                   value: 1,
                   groupValue: _value,
                   onChanged: (value) {
-                    setState(() {
-                      _value = int.parse(value.toString());
-                    });
+                    // setState(() {
+                    //   _value = int.parse(value.toString());
+                    // });
                   },
                 ),
               ),
@@ -111,9 +107,9 @@ class _CreateScreenState extends State<CreateScreen> {
                   value: 2,
                   groupValue: _value,
                   onChanged: (value) {
-                    setState(() {
-                      _value = int.parse(value.toString());
-                    });
+                    // setState(() {
+                    //   _value = int.parse(value.toString());
+                    // });
                   },
                 ),
               ),
@@ -138,6 +134,13 @@ class _CreateScreenState extends State<CreateScreen> {
               Center(
                 child: ElevatedButton.icon(
                   onPressed: () async {
+                    await controller.addTransaction({
+                      "nama": namaController.text,
+                      "type": _value,
+                      "total": totalController.text.fromRupiah().toString(),
+                      "created_at": DateTime.now().toString(),
+                      "updated_at": DateTime.now().toString(),
+                    });
                     await dbHelper.insert({
                       "nama": namaController.text,
                       "type": _value,
