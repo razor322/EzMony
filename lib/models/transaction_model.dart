@@ -1,4 +1,4 @@
-class TransaksiModel {
+class TransactionModel {
   /*
   tipe
   1 -> pemasukan
@@ -7,7 +7,7 @@ class TransaksiModel {
   int? id, type, total;
   String? nama, createdAt, updatedAt;
 
-  TransaksiModel(
+  TransactionModel(
       {this.id,
       this.type,
       this.total,
@@ -15,8 +15,8 @@ class TransaksiModel {
       this.createdAt,
       this.updatedAt});
 
-  factory TransaksiModel.fromJson(Map<String, dynamic> json) {
-    return TransaksiModel(
+  factory TransactionModel.fromJson(Map<String, dynamic> json) {
+    return TransactionModel(
         id: json['id'],
         type: json['type'],
         total: json['total'],
